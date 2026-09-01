@@ -18,6 +18,15 @@
       throw new Error("WebGL2 is not available on this device/browser.");
     }
 
+    const colors = Array.from({ length: 3 }, () => [
+      Math.random(),
+      Math.random(),
+      Math.random(),
+    ]);
+    let index = 0;
+    let current = colors[0];
+    let start = null;
+
     function resizeCanvasToDisplaySize() {
       const dpr = window.devicePixelRatio || 1;
       const width = Math.round(canvas.clientWidth * dpr);
@@ -32,13 +41,37 @@
       resizeCanvasToDisplaySize();
       gl.viewport(0, 0, canvas.width, canvas.height);
 
-      // TODO(student): try changing these values
-      gl.clearColor(0.1, 0.15, 0.35, 1.0);
+      const [r, g, b] = current;
+      gl.clearColor(r, g, b, 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT);
     }
 
+    function frame(time) {
+      if (start === null) start = time;
+
+      let t = (time - start) / 1000;
+      while (t >= 1) {
+        start += 1000;
+        t -= 1;
+        index = (index + 1) % colors.length;
+        const [r, g, b] = colors[index];
+        console.log(`clearColor(${r}, ${g}, ${b}, 1.0)`);
+      }
+
+      const from = colors[index];
+      const to = colors[(index + 1) % colors.length];
+      current = [
+        from[0] + (to[0] - from[0]) * t,
+        from[1] + (to[1] - from[1]) * t,
+        from[2] + (to[2] - from[2]) * t,
+      ];
+      render();
+
+      requestAnimationFrame(frame);
+    }
+
     window.addEventListener("resize", render);
-    render();
+    requestAnimationFrame(frame);
   </script>
 </body>
 </html>
