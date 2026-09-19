@@ -27,7 +27,7 @@
       precision mediump float;
       out vec4 outColor;
       void main() {
-        outColor = vec4(0.9, 0.5, 0.1, 1.0);  // TODO(student): recolor me
+        outColor = vec4(0.9, 0.2, 0.2, 1.0);
       }`;
 
     function createShader(gl, type, source) {
@@ -55,11 +55,19 @@
 
     const program = createProgram(gl, vertexSource, fragmentSource);
 
-    // TODO(student): change these three vertices
     const positions = new Float32Array([
-       0.0,  0.5,   // top
-      -0.5, -0.5,   // bottom-left
-       0.5, -0.5,   // bottom-right
+      -0.5,  0.5,   // top-left
+       0.5,  0.5,   // top-right
+       0.0, -1.5,   // outside [-1, 1], clipping cuts off the tip so the bottom edge is flat
+
+      // square in the top-left corner, made from two triangles
+      -0.9,  0.9,
+      -0.9,  0.6,
+      -0.6,  0.6,
+
+      -0.9,  0.9,
+      -0.6,  0.6,
+      -0.6,  0.9,
     ]);
 
     const buffer = gl.createBuffer();
@@ -83,7 +91,7 @@
       gl.useProgram(program);
       gl.clearColor(0.10, 0.12, 0.16, 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.drawArrays(gl.TRIANGLES, 0, 9);
     }
 
     window.addEventListener("resize", render);
