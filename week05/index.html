@@ -57,14 +57,19 @@
 
     const program = createProgram(gl, vertexSource, fragmentSource);
 
-    // Interleaved: x, y, r, g, b per vertex. TODO(student): add a 3rd triangle.
+    // Interleaved: x, y, r, g, b per vertex.
+    // The 2 triangles meet on the bottom left to top right diagonal.
+    // Both use the same colors at those corners so the seam is invisible.
     const data = new Float32Array([
-      -0.6, -0.6,  1, 0, 0,
-       0.6, -0.6,  0, 1, 0,
-       0.6,  0.6,  0, 0, 1,
-      -0.6, -0.6,  1, 0, 0,
-       0.6,  0.6,  0, 0, 1,
-      -0.6,  0.6,  1, 1, 0,
+      -0.6, -0.6,  0, 1, 1,
+       0.6, -0.6,  1, 0, 1,
+       0.6,  0.6,  1, 1, 1,
+      -0.6, -0.6,  0, 1, 1,
+       0.6,  0.6,  1, 1, 1,
+      -0.6,  0.6,  1, 0.5, 0,
+      -0.9,  0.7,  1, 0, 0,
+      -0.7,  0.7,  0, 1, 0,
+      -0.8,  0.9,  0, 0, 1,
     ]);
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -81,7 +86,7 @@
     gl.enableVertexAttribArray(aColor);
     gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, stride, 2 * F);
 
-    const VERTEX_COUNT = 6; // TODO(student): 9 after adding a third triangle
+    const VERTEX_COUNT = 9;
 
     function render() {
       const dpr = window.devicePixelRatio || 1;
