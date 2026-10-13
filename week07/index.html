@@ -94,8 +94,7 @@
     gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, stride, 2 * F);
     const uMVP = gl.getUniformLocation(program, "u_mvp");
 
-    // TODO(student): add camera variables and a zoom factor.
-    const cx = 0, cy = 0, zoom = 1;
+    const cx = 0.4, cy = 0.2, zoom = 0.8;
 
     function render() {
       const dpr = window.devicePixelRatio || 1;
@@ -107,14 +106,17 @@
       const aspect = canvas.width / canvas.height;
       const P = orthographic(-aspect, aspect, -1, 1);
       const V = multiply(scaling(zoom, zoom), translation(-cx, -cy));
-      const M = translation(0, 0); // TODO(student): add a second object
+      const M1 = translation(0, 0);
+      const M2 = translation(1.2, 0.4);
 
       gl.useProgram(program);
       gl.clearColor(0.10, 0.12, 0.16, 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT);
 
-      const mvp = multiply(multiply(P, V), M);
-      gl.uniformMatrix4fv(uMVP, false, mvp);
+      const PV = multiply(P, V);
+      gl.uniformMatrix4fv(uMVP, false, multiply(PV, M1));
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      gl.uniformMatrix4fv(uMVP, false, multiply(PV, M2));
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
 
