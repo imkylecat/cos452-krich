@@ -56,11 +56,9 @@
     const program = createProgram(gl, vertexSource, fragmentSource);
 
     // interleaved: x, y, u, v
-    // TODO(student) (c): change every 1 in the UVs (the u, v columns) to 2 so the
-    // UVs run past 1.0; otherwise REPEAT and CLAMP_TO_EDGE look the same.
     const data = new Float32Array([
-      -0.7,-0.7, 0,0,   0.7,-0.7, 1,0,   0.7,0.7, 1,1,
-      -0.7,-0.7, 0,0,   0.7, 0.7, 1,1,  -0.7,0.7, 0,1,
+      -0.7,-0.7, 0,0,   0.7,-0.7, 2,0,   0.7,0.7, 2,2,
+      -0.7,-0.7, 0,0,   0.7, 0.7, 2,2,  -0.7,0.7, 0,2,
     ]);
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -78,22 +76,20 @@
     const image = new Image();
     image.onload = () => {
       gl.bindTexture(gl.TEXTURE_2D, texture);
-      // TODO(student) (b): comment out the next line and reload. In a comment,
-      // explain why the image is upside down without it, and name the other fix
-      // (flip V in the UVs: v becomes 1 - v). Then turn it back on.
+      // Without this the image is upside down. Images store the top row first,
+      // but v = 0 is the bottom of the quad. Other fix: flip V (v becomes 1 minus v).
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-      // TODO(student) (c): try REPEAT vs CLAMP_TO_EDGE (both lines), then NEAREST vs
-      // LINEAR for MAG_FILTER. Describe each visual difference in a comment.
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      // REPEAT tiles the image. CLAMP_TO_EDGE smears the edge pixels into streaks.
+      // NEAREST looks blocky and pixelated. LINEAR looks smooth but a little
+      // blurry. The difference is clearest when the image is magnified.
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
       render();
     };
-    // TODO(student) (a): put your own image (PNG or JPG) next to index.html and
-    // set its file name here.
-    image.src = "my-image.png"; // must be served over http (Live Server)
+    image.src = "my-image.jpg"; // must be served over http (Live Server)
 
     function render() {
       const dpr = window.devicePixelRatio || 1;
@@ -113,9 +109,6 @@
     }
 
     render(); // draws before the image loads; render() runs again on image.onload
-
-    // TODO(student) (d): commit the image with index.html, open your Pages URL,
-    // and check the console (F12). File names are case-sensitive on Pages.
   </script>
 </body>
 </html>
