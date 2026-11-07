@@ -17,6 +17,10 @@
       throw new Error("WebGL2 is not available on this device/browser.");
     }
 
+    // With v_normal = a_normal, each face keeps one brightness as the cube turns,
+    // like the light is glued to the cube. a_normal is in model space but the light
+    // is fixed in world space, so the normal must be rotated by the model matrix
+    // before the dot product.
     const vertexSource = `#version 300 es
       in vec3 a_position;
       in vec3 a_normal;
@@ -27,9 +31,6 @@
       out vec3 v_color;
       void main() {
         gl_Position = u_mvp * vec4(a_position, 1.0);
-        // TODO(student) (d): replace the next line with v_normal = a_normal;
-        // and watch the cube turn. Describe in a JS comment what goes wrong and
-        // why, then put this line back.
         v_normal = mat3(u_model) * a_normal;
         v_color = a_color;
       }`;
@@ -82,16 +83,13 @@
         [-0.5,-0.5, 0.5],[0.5,-0.5, 0.5],[0.5,0.5, 0.5],[-0.5,0.5, 0.5],
       ];
       const col = [0.85,0.85,0.88];
-      // TODO(student) (a): the +z face has its normal. Fill in the other five:
-      // each is a unit vector pointing straight OUT of that face. Until you do,
-      // those faces shade wrongly.
       const faces = [
         { idx:[4,5,6,7], n:[0,0,1] },   // +z (front)
-        { idx:[1,0,3,2], n:[0,0,0] },   // -z (back)
-        { idx:[5,1,2,6], n:[0,0,0] },   // +x (right)
-        { idx:[0,4,7,3], n:[0,0,0] },   // -x (left)
-        { idx:[7,6,2,3], n:[0,0,0] },   // +y (top)
-        { idx:[0,1,5,4], n:[0,0,0] },   // -y (bottom)
+        { idx:[1,0,3,2], n:[0,0,-1] },  // -z (back)
+        { idx:[5,1,2,6], n:[1,0,0] },   // +x (right)
+        { idx:[0,4,7,3], n:[-1,0,0] },  // -x (left)
+        { idx:[7,6,2,3], n:[0,1,0] },   // +y (top)
+        { idx:[0,1,5,4], n:[0,-1,0] },  // -y (bottom)
       ];
       const out = [];
       for (const f of faces) {
@@ -142,12 +140,12 @@
       gl.uniformMatrix4fv(uMVP, false, mvp);
       gl.uniformMatrix4fv(uModel, false, model);
 
-      // TODO(student) (b): move the light to a new direction. In a comment, say
-      // which face is now brightest and why.
-      gl.uniform3f(uLight, 0.5, 0.7, 1.0);   // direction TO the light
-      // TODO(student) (c): tune the ambient floor so shadowed faces are dim but
-      // not black. In a comment, describe what 0.0 and 1.0 look like.
-      gl.uniform1f(uAmbient, 0.15);
+      // The front (+z) face is now brightest before the cube turns. Diffuse is
+      // max(dot(N, L), 0), which is largest when the normal points at the light.
+      gl.uniform3f(uLight, -0.5, 0.5, 1.0);   // direction TO the light
+      // At 0.0, faces turned away from the light are pure black. At 1.0, there is
+      // no shading and every face is full color.
+      gl.uniform1f(uAmbient, 0.25);
 
       gl.clearColor(0.10, 0.12, 0.16, 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
